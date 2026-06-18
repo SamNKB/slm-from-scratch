@@ -7,3 +7,12 @@ tensorboard>=2.14
 wandb>=0.17
 netron>=7.0
 onnx>=1.15
+
+# API REST
+fastapi>=0.111
+uvicorn[standard]>=0.29
+pydantic>=2.0
+
+# PySpark (big data)
+pyspark>=3.5
+pyarrow>=14.0

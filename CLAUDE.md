@@ -97,6 +97,46 @@ python scripts/visualize.py --checkpoint checkpoints/address/step_002000.pt --no
 python scripts/visualize.py --wandb-sync
 ```
 
+### API REST (produção em tempo real)
+
+```bash
+# Iniciar servidor (porta 8000)
+uvicorn scripts.serve:app --host 0.0.0.0 --port 8000
+
+# Com checkpoint e tokenizador customizados
+CHECKPOINT=checkpoints/address/step_002000.pt \
+TOKENIZER_DIR=data/tokenizer \
+uvicorn scripts.serve:app --host 0.0.0.0 --port 8000
+
+# Endpoints disponíveis:
+#   GET  /health                → status + device
+#   POST /normalizar            → { endereco } → { original, normalizado }
+#   POST /normalizar/batch      → { enderecos: [...] } → { resultados: [...] }
+```
+
+### PySpark (processamento em lote / big data)
+
+```bash
+# Standalone — lê CSV, escreve Parquet
+spark-submit scripts/spark_udf.py \
+  --input  data/enderecos.csv \
+  --output data/enderecos_norm \
+  --col    endereco_bruto \
+  --partitions 8
+
+# Como UDF em pipeline existente
+python - <<'EOF'
+from scripts.spark_udf import make_normalizar_udf
+from pyspark.sql.functions import col
+
+normalizar = make_normalizar_udf(
+    checkpoint    = "checkpoints/address/step_002000.pt",
+    tokenizer_dir = "data/tokenizer",
+)
+df = df.withColumn("endereco_norm", normalizar(col("endereco_bruto")))
+EOF
+```
+
 ---
 
 ## Arquitetura do modelo (`slm/model.py`)
