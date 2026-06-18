@@ -3,9 +3,14 @@ __pycache__/
 *.egg-info/
 .env
 
-# data e checkpoints são pesados, não commita
+# data — arquivos gerados e dados reais (podem ser sensíveis ou pesados)
+data/raw/
 data/processed/
+data/tokenizer/
 checkpoints/
+
+# relatórios gerados
+reports/
 
 # jupyter
 .ipynb_checkpoints/
@@ -23,3 +28,18 @@ wandb/
 
 # onnx exportado ao lado dos checkpoints
 *.onnx
+
+# arquivos pesados de modelo soltos na raiz
+*.pt
+*.bin
+
+# OS
+.DS_Store
+Thumbs.db
+
+# build / dist
+dist/
+build/
+
+# logs
+*.log
