@@ -40,3 +40,8 @@ class TrainConfig:
     # device
     device: str = "cuda"
     compile: bool = False  # torch.compile — experimental
+
+    # logging
+    tensorboard_dir: str = "runs"
+    wandb_project: str = "slm-from-scratch"
+    wandb_mode: str = "offline"  # "offline" | "online" | "disabled"

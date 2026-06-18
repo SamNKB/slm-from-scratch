@@ -5,6 +5,8 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
+import wandb
 
 from .config import TrainConfig, ModelConfig
 from .model import SLM
@@ -44,8 +46,21 @@ class Trainer:
         if train_cfg.resume_from:
             self._load_checkpoint(train_cfg.resume_from)
 
+        run_name = Path(train_cfg.checkpoint_dir).name
+        self.writer = SummaryWriter(log_dir=f"{train_cfg.tensorboard_dir}/{run_name}")
+
+        wandb.init(
+            project=train_cfg.wandb_project,
+            name=run_name,
+            mode=train_cfg.wandb_mode,
+            config={**vars(model_cfg), **vars(train_cfg)},
+            resume="allow",
+        )
+
         print(f"Model parameters: {self.model.num_params():,}")
         print(f"Device: {self.device}")
+        print(f"TensorBoard : tensorboard --logdir {train_cfg.tensorboard_dir}")
+        print(f"W&B mode    : {train_cfg.wandb_mode}")
 
     @torch.no_grad()
     def _eval(self) -> float:
@@ -115,14 +130,21 @@ class Trainer:
             if self.step % self.cfg.log_interval == 0:
                 elapsed = time.perf_counter() - t0
                 print(f"step {self.step:6d} | loss {loss.item():.4f} | lr {lr:.2e} | {elapsed:.1f}s")
+                self.writer.add_scalar("train/loss", loss.item(), self.step)
+                self.writer.add_scalar("train/lr", lr, self.step)
+                wandb.log({"train/loss": loss.item(), "train/lr": lr}, step=self.step)
                 t0 = time.perf_counter()
 
             if self.step % self.cfg.eval_interval == 0:
                 val_loss = self._eval()
                 print(f"  val loss: {val_loss:.4f}")
+                self.writer.add_scalar("val/loss", val_loss, self.step)
+                wandb.log({"val/loss": val_loss}, step=self.step)
 
             if self.step % self.cfg.checkpoint_interval == 0:
                 self._save_checkpoint()
 
         self._save_checkpoint()
+        self.writer.close()
+        wandb.finish()
         print("Training complete.")

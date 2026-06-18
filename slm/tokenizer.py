@@ -73,6 +73,7 @@ class BPETokenizer:
         n_merges = vocab_size - len(self.vocab)
 
         words = [list(w) for w in re.findall(self._PAT, text)]
+        self._merge_rank: dict[tuple[str, str], int] = {}
 
         for step in range(n_merges):
             stats = self._get_stats(words)
@@ -82,6 +83,7 @@ class BPETokenizer:
             merged = "".join(best)
             self.vocab[merged] = len(self.vocab)
             self.merges[best] = merged
+            self._merge_rank[best] = step
             words = self._merge(words, best, merged)
             if verbose and (step + 1) % 500 == 0:
                 print(f"  merge {step + 1}/{n_merges}: {best!r} → {merged!r}")
@@ -100,7 +102,7 @@ class BPETokenizer:
                 candidates = {pair: self.merges[pair] for pair in stats if pair in self.merges}
                 if not candidates:
                     break
-                best = min(candidates, key=lambda p: list(self.merges.keys()).index(p))
+                best = min(candidates, key=lambda p: self._merge_rank.get(p, 0))
                 chars = self._merge([chars], best, candidates[best])[0]
 
             for ch in chars:
@@ -131,5 +133,6 @@ class BPETokenizer:
             tok.vocab = json.load(f)
         with open(path / "merges.json", encoding="utf-8") as f:
             raw = json.load(f)
-        tok.merges = {(tuple(k), v) for k, v in raw}
+        tok.merges = {tuple(k): v for k, v in raw}
+        tok._merge_rank = {tuple(k): i for i, (k, _) in enumerate(raw)}
         return tok

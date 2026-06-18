@@ -3,3 +3,7 @@ numpy>=1.26
 regex>=2024.4
 pyyaml>=6.0
 jupyter>=1.0
+tensorboard>=2.14
+wandb>=0.17
+netron>=7.0
+onnx>=1.15

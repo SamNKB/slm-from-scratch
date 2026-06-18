@@ -35,7 +35,7 @@ def main():
 
     tok = BPETokenizer.load(args.tokenizer)
 
-    ids = tok.encode(args.prompt, add_special=True) if args.prompt else [tok.bos_id]
+    ids = [tok.bos_id] + (tok.encode(args.prompt) if args.prompt else [])
     idx = torch.tensor([ids], device=device)
 
     with torch.no_grad():

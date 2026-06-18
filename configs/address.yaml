@@ -1,0 +1,30 @@
+# Modelo para normalização de endereços (~2M params)
+# Contexto curto porque endereços são curtos (< 150 chars)
+model:
+  vocab_size: 1024
+  context_length: 128
+  d_model: 128
+  n_heads: 4
+  n_layers: 4
+  d_ff: 512
+  dropout: 0.1
+  bias: false
+
+train:
+  data_path: data/processed/train.bin
+  val_data_path: data/processed/val.bin
+  batch_size: 64
+  max_steps: 20000
+  eval_interval: 500
+  eval_steps: 40
+  log_interval: 100
+  learning_rate: 0.0005
+  weight_decay: 0.1
+  grad_clip: 1.0
+  warmup_steps: 400
+  checkpoint_dir: checkpoints/address
+  checkpoint_interval: 2000
+  device: cuda
+  tensorboard_dir: runs
+  wandb_project: slm-address
+  wandb_mode: offline

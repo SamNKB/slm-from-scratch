@@ -1,0 +1,224 @@
+/* ============================================================
+   IDENTIDADE VISUAL — SLM Reports
+   Aplica-se a notebooks Jupyter exportados em HTML e
+   qualquer relatório gerado pelo projeto.
+   ============================================================ */
+
+/* ── Tokens de design ── */
+:root {
+  /* Paleta primária */
+  --dark-blue:   #1D4F91;   /* Azul Escuro — cor principal          */
+  --light-blue:  #426DA9;   /* Azul Médio — complemento             */
+  --purple:      #77127B;   /* Roxo — destaque alternativo          */
+  --raspberry:   #C1188B;   /* Framboesa — ênfase                   */
+  --magenta:     #E80070;   /* Magenta — chamada forte              */
+  --white:       #FFFFFF;   /* Fundo, texto sobre escuros           */
+
+  /* Status e dados */
+  --navy:        #1A2B4B;   /* Texto principal, fundo escuro        */
+  --alert-green: #0FAC67;   /* Sucesso, val loss baixo              */
+  --alert-red:   #FA1320;   /* Erro, overfitting                    */
+  --yellow:      #FEDB00;   /* Aviso, resultado regular             */
+  --orange:      #FF9735;   /* Atenção intermediária                */
+  --teal:        #54C2B8;   /* Série 3 em gráficos                  */
+  --grey:        #495765;   /* Texto de corpo, labels               */
+
+  /* Paleta secundária — superfícies e bordas */
+  --blue-10:     #F7F8FB;   /* Superfície de card, fundo suave      */
+  --blue-20:     #E1E4EF;   /* Borda sutil, divisor                 */
+  --blue-30:     #C6CBE1;   /* Borda de foco                        */
+  --grey-10:     #F8F8F9;   /* Fundo alternativo neutro             */
+  --grey-50:     #8F97A0;   /* Labels secundários, metadados        */
+
+  /* Squircle — fórmula oficial: lado ÷ 4 (quadrado), lado menor ÷ 10 (retângulo) */
+  --radius-sm:   8px;    /* badges inline         (32px ÷ 4)  */
+  --radius-md:   20px;   /* callouts, células     (80px ÷ 4)  */
+  --radius-lg:   32px;   /* cards principais      (128px ÷ 4) */
+  --radius-xl:   56px;   /* squircle hero / pill  (224px ÷ 4) */
+  --radius-rect: 5px;    /* retângulos alongados  (50px ÷ 10) */
+
+  /* Tipografia — Roboto para materiais online */
+  --font-sans:   "Roboto", "Arial", system-ui, sans-serif;
+  --font-mono:   "Roboto Mono", "Courier New", monospace;
+
+  /* Espaçamento */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+
+  /* Sombra */
+  --shadow-card: 0 2px 12px rgba(29, 79, 145, 0.10);
+  --shadow-lift: 0 8px 32px rgba(29, 79, 145, 0.18);
+}
+
+/* ── Reset base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--navy);
+  background: var(--white);
+  line-height: 1.65;
+  margin: 0;
+  padding: var(--space-5);
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+/* ── Tipografia ── */
+h1, h2, h3, h4 {
+  color: var(--navy);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+}
+
+h1 { font-size: 2rem;   border-bottom: 3px solid var(--dark-blue); padding-bottom: var(--space-2); }
+h2 { font-size: 1.4rem; border-left: 4px solid var(--dark-blue);   padding-left: var(--space-2); }
+h3 { font-size: 1.1rem; color: var(--dark-blue); }
+
+a { color: var(--dark-blue); text-decoration: none; border-bottom: 1px solid var(--blue-20); }
+a:hover { border-bottom-color: var(--dark-blue); }
+
+code {
+  font-family: var(--font-mono);
+  background: var(--blue-10);
+  color: var(--navy);
+  padding: 2px 6px;
+  border-radius: var(--radius-rect);
+  font-size: 0.875em;
+}
+
+pre {
+  background: var(--navy);
+  color: #C9D1E3;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-card);
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ── Squircle cards ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--blue-20);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover { box-shadow: var(--shadow-lift); }
+
+.card-primary {
+  background: var(--dark-blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.card-subtle {
+  background: var(--blue-10);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+/* ── Callouts (squircle) ── */
+.callout {
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.callout-info    { background: var(--blue-10);               border-left: 4px solid var(--dark-blue);   }
+.callout-success { background: rgba(15,  172, 103, 0.12);    border-left: 4px solid var(--alert-green); }
+.callout-warning { background: rgba(254, 219, 0,   0.18);    border-left: 4px solid var(--yellow);      }
+.callout-danger  { background: rgba(250, 19,  32,  0.10);    border-left: 4px solid var(--alert-red);   }
+
+/* ── Badges (squircle pill) ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-xl);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-blue      { background: var(--dark-blue);   color: var(--white); }
+.badge-green     { background: var(--alert-green); color: var(--white); }
+.badge-yellow    { background: var(--yellow);      color: var(--navy);  }
+.badge-red       { background: var(--alert-red);   color: var(--white); }
+.badge-purple    { background: var(--purple);      color: var(--white); }
+.badge-raspberry { background: var(--raspberry);   color: var(--white); }
+
+/* ── Tabelas ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin: var(--space-4) 0;
+}
+
+thead tr { background: var(--dark-blue); color: var(--white); }
+th { padding: var(--space-3); text-align: left; font-weight: 600; font-size: 0.875rem; letter-spacing: 0.03em; }
+td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--blue-10); font-size: 0.9rem; color: var(--grey); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--blue-10); }
+
+/* ── Métricas de treino (squircle) ── */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.metric-box {
+  background: var(--blue-10);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+}
+
+.metric-box .value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--dark-blue);
+  line-height: 1;
+}
+
+.metric-box .label {
+  font-size: 0.8rem;
+  color: var(--grey-50);
+  margin-top: var(--space-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Jupyter notebook overrides ── */
+.jp-Notebook         { background: var(--white) !important; }
+.jp-Cell             { border-radius: var(--radius-md) !important; margin-bottom: var(--space-3) !important; }
+.jp-InputArea-editor { border-radius: var(--radius-rect) !important; }
+.output_area         { border-radius: var(--radius-md); padding: var(--space-3); background: var(--blue-10); }
