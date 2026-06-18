@@ -73,6 +73,7 @@ class BPETokenizer:
         n_merges = vocab_size - len(self.vocab)
 
         words = [list(w) for w in re.findall(self._PAT, text)]
+        self.merges = {}
         self._merge_rank: dict[tuple[str, str], int] = {}
 
         for step in range(n_merges):
@@ -102,7 +103,7 @@ class BPETokenizer:
                 candidates = {pair: self.merges[pair] for pair in stats if pair in self.merges}
                 if not candidates:
                     break
-                best = min(candidates, key=lambda p: self._merge_rank.get(p, 0))
+                best = min(candidates, key=lambda p: self._merge_rank.get(p, float("inf")))
                 chars = self._merge([chars], best, candidates[best])[0]
 
             for ch in chars:

@@ -35,8 +35,7 @@ async def lifespan(app: FastAPI):
         if device_arg == "auto" else device_arg
     )
 
-    tokenizer = BPETokenizer()
-    tokenizer.load(tok_dir)
+    tokenizer = BPETokenizer.load(tok_dir)
 
     ckpt  = torch.load(checkpoint, map_location=device, weights_only=False)
     model = SLM(ckpt["model_cfg"]).to(device)

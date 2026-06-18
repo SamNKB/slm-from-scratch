@@ -36,7 +36,7 @@ def main():
     tok = BPETokenizer.load(args.tokenizer)
 
     ids = [tok.bos_id] + (tok.encode(args.prompt) if args.prompt else [])
-    idx = torch.tensor([ids], device=device)
+    idx = torch.tensor([ids], dtype=torch.long, device=device)
 
     with torch.no_grad():
         out = model.generate(idx, args.max_tokens, temperature=args.temperature, top_k=args.top_k)

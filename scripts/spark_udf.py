@@ -48,8 +48,7 @@ def _load(checkpoint: str, tokenizer_dir: str):
     from slm.model import SLM
     from slm.tokenizer import BPETokenizer
 
-    tokenizer = BPETokenizer()
-    tokenizer.load(tokenizer_dir)
+    tokenizer = BPETokenizer.load(tokenizer_dir)
 
     ckpt  = torch.load(checkpoint, map_location="cpu", weights_only=False)
     model = SLM(ckpt["model_cfg"])

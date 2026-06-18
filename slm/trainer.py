@@ -27,6 +27,7 @@ class Trainer:
         self.model_cfg = model_cfg
         self.cfg = train_cfg
         self.device = torch.device(train_cfg.device if torch.cuda.is_available() else "cpu")
+        train_cfg.device = str(self.device)
 
         self.model = SLM(model_cfg).to(self.device)
         if train_cfg.compile:
@@ -73,7 +74,7 @@ class Trainer:
             _, loss = self.model(x, y)
             losses.append(loss.item())
         self.model.train()
-        return sum(losses) / len(losses)
+        return sum(losses) / len(losses) if losses else float("nan")
 
     def _save_checkpoint(self):
         path = Path(self.cfg.checkpoint_dir) / f"step_{self.step:06d}.pt"

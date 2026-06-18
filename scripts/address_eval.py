@@ -21,7 +21,7 @@ from slm.tokenizer import BPETokenizer
 def normalizar(model: SLM, tok: BPETokenizer, endereco: str, device: torch.device) -> str:
     prompt = f"ENTRADA: {endereco} | SAIDA:"
     ids = [tok.bos_id] + tok.encode(prompt)
-    idx = torch.tensor([ids], device=device)
+    idx = torch.tensor([ids], dtype=torch.long, device=device)
 
     with torch.no_grad():
         out = model.generate(idx, max_new_tokens=80, temperature=0.3, top_k=20)

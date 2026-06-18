@@ -13,7 +13,7 @@ class TokenDataset(Dataset):
         self.data = torch.from_numpy(data.astype(np.int64))
 
     def __len__(self) -> int:
-        return len(self.data) - self.context_length
+        return max(0, len(self.data) - self.context_length)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         chunk = self.data[idx : idx + self.context_length + 1]
