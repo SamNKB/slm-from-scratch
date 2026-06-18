@@ -1,7 +1,7 @@
 """
 PySpark UDF para normalização de endereços em lote.
 
-O modelo é carregado uma vez por executor (singleton) e reutilizado
+O normalizador é carregado uma vez por executor (singleton) e reutilizado
 em todos os batches da mesma partição — sem overhead de re-inicialização.
 
 Uso como UDF em pipeline existente:
@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import os
 import sys
-import torch
+
 import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import pandas_udf, col
@@ -36,7 +36,7 @@ from pyspark.sql.types import StringType
 _cache: dict = {}
 
 
-def _load(checkpoint: str, tokenizer_dir: str):
+def _get_normalizer(checkpoint: str, tokenizer_dir: str):
     if checkpoint in _cache:
         return _cache[checkpoint]
 
@@ -45,27 +45,21 @@ def _load(checkpoint: str, tokenizer_dir: str):
     if root not in sys.path:
         sys.path.insert(0, root)
 
-    from slm.model import SLM
-    from slm.tokenizer import BPETokenizer
+    from slm.inference import AddressNormalizer
 
-    tokenizer = BPETokenizer.load(tokenizer_dir)
-
-    ckpt  = torch.load(checkpoint, map_location="cpu", weights_only=False)
-    model = SLM(ckpt["model_cfg"])
-    model.load_state_dict(ckpt["model"])
-    model.eval()
-
-    _cache[checkpoint] = (model, tokenizer)
-    return _cache[checkpoint]
+    # Workers Spark rodam em CPU
+    normalizer = AddressNormalizer.from_checkpoint(checkpoint, tokenizer_dir, device="cpu")
+    _cache[checkpoint] = normalizer
+    return normalizer
 
 
 # ── Factory do UDF ───────────────────────────────────────────────────────
 def make_normalizar_udf(
-    checkpoint:    str   = "checkpoints/address/step_002000.pt",
-    tokenizer_dir: str   = "data/tokenizer",
-    temperature:   float = 0.3,
-    top_k:         int   = 20,
-    max_new_tokens: int  = 60,
+    checkpoint:     str   = "checkpoints/address/step_002000.pt",
+    tokenizer_dir:  str   = "data/tokenizer",
+    temperature:    float = 0.3,
+    top_k:          int   = 20,
+    max_new_tokens: int   = 60,
 ):
     """
     Retorna um pandas_udf pronto para uso em DataFrames Spark.
@@ -79,29 +73,18 @@ def make_normalizar_udf(
 
     @pandas_udf(StringType())
     def _udf(series: pd.Series) -> pd.Series:
-        model, tok = _load(_ckpt, _tok_dir)
+        normalizer = _get_normalizer(_ckpt, _tok_dir)
         results = []
 
         for endereco in series:
             if not endereco or not str(endereco).strip():
                 results.append(None)
                 continue
-
-            prompt = f"ENTRADA: {str(endereco).strip()} | SAIDA:"
-            ids    = [tok.bos_id] + tok.encode(prompt)
-            idx    = torch.tensor([ids], dtype=torch.long)
-
-            with torch.no_grad():
-                out = model.generate(idx, max_new_tokens=_max,
-                                     temperature=_temp, top_k=_topk)
-
-            decoded = tok.decode(out[0].tolist())
-            if "SAIDA:" in decoded:
-                result = decoded.split("SAIDA:")[-1].strip().split("\n")[0].strip()
-            else:
-                result = decoded.strip()
-
-            results.append(result)
+            results.append(
+                normalizer.normalize(
+                    str(endereco), temperature=_temp, top_k=_topk, max_new_tokens=_max
+                )
+            )
 
         return pd.Series(results)
 

@@ -6,14 +6,12 @@ Usage:
 """
 
 import argparse
-import torch
 from pathlib import Path
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from slm.model import SLM
-from slm.tokenizer import BPETokenizer
+from slm.inference import TextGenerator
 
 
 def main():
@@ -26,22 +24,14 @@ def main():
     parser.add_argument("--top-k", type=int, default=50)
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    gen = TextGenerator.from_checkpoint(args.checkpoint, args.tokenizer)
 
-    ckpt = torch.load(args.checkpoint, map_location=device)
-    model = SLM(ckpt["model_cfg"]).to(device)
-    model.load_state_dict(ckpt["model"])
-    model.eval()
-
-    tok = BPETokenizer.load(args.tokenizer)
-
-    ids = [tok.bos_id] + (tok.encode(args.prompt) if args.prompt else [])
-    idx = torch.tensor([ids], dtype=torch.long, device=device)
-
-    with torch.no_grad():
-        out = model.generate(idx, args.max_tokens, temperature=args.temperature, top_k=args.top_k)
-
-    print(tok.decode(out[0].tolist()))
+    print(gen.generate(
+        args.prompt,
+        max_new_tokens=args.max_tokens,
+        temperature=args.temperature,
+        top_k=args.top_k,
+    ))
 
 
 if __name__ == "__main__":

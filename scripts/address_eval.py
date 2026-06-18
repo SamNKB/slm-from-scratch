@@ -4,33 +4,16 @@ Avalia o modelo de endereços com entradas livres.
 Uso:
     python scripts/address_eval.py --checkpoint checkpoints/address/step_020000.pt
 
-Digite endereços no prompt interativo. Ctrl+C para sair.
+Digite endereços no prompt interativo. Enter vazio para sair.
 """
 
 import argparse
-import torch
 from pathlib import Path
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from slm.model import SLM
-from slm.tokenizer import BPETokenizer
-
-
-def normalizar(model: SLM, tok: BPETokenizer, endereco: str, device: torch.device) -> str:
-    prompt = f"ENTRADA: {endereco} | SAIDA:"
-    ids = [tok.bos_id] + tok.encode(prompt)
-    idx = torch.tensor([ids], dtype=torch.long, device=device)
-
-    with torch.no_grad():
-        out = model.generate(idx, max_new_tokens=80, temperature=0.3, top_k=20)
-
-    gerado = tok.decode(out[0].tolist())
-    # extrai só o que vem depois de "SAIDA:"
-    if "SAIDA:" in gerado:
-        return gerado.split("SAIDA:")[-1].strip().split("\n")[0].strip()
-    return gerado.strip()
+from slm.inference import AddressNormalizer
 
 
 def main():
@@ -39,15 +22,8 @@ def main():
     parser.add_argument("--tokenizer", default="data/tokenizer")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
-    model = SLM(ckpt["model_cfg"]).to(device)
-    model.load_state_dict(ckpt["model"])
-    model.eval()
-
-    tok = BPETokenizer.load(args.tokenizer)
-    print(f"Modelo carregado. Device: {device}\n")
+    norm = AddressNormalizer.from_checkpoint(args.checkpoint, args.tokenizer)
+    print(f"Modelo carregado. Device: {norm.device}\n")
 
     exemplos = [
         "r das flores 123 sp",
@@ -57,9 +33,8 @@ def main():
     ]
     print("=== Exemplos automáticos ===")
     for e in exemplos:
-        resultado = normalizar(model, tok, e, device)
         print(f"  IN : {e}")
-        print(f"  OUT: {resultado}\n")
+        print(f"  OUT: {norm.normalize(e)}\n")
 
     print("=== Modo interativo (Enter vazio para sair) ===")
     while True:
@@ -69,7 +44,7 @@ def main():
             break
         if not entrada:
             break
-        print(f"  → {normalizar(model, tok, entrada, device)}\n")
+        print(f"  → {norm.normalize(entrada)}\n")
 
 
 if __name__ == "__main__":
