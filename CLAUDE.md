@@ -154,6 +154,24 @@ Hierarquia: `SLM` → `Block` × `n_layers` → `CausalSelfAttention` + `FeedFor
 
 ---
 
+## Camada de inferência (`slm/inference.py`)
+
+**Fonte única** de carregamento e geração. Os entrypoints (`serve.py`, `spark_udf.py`, `address_eval.py`, `generate.py`) são cascas finas sobre ela — nenhum duplica a lógica de tensorizar/gerar/decodificar.
+
+- `load_model(checkpoint, device)` / `resolve_device(device)` — carregamento e resolução de device (`"auto"` → cuda/cpu)
+- `TextGenerator` — geração de texto livre; método `.generate(prompt, ...)`
+- `AddressNormalizer(TextGenerator)` — normalização `ENTRADA/SAIDA`; método `.normalize(endereco, ...)` retorna só a forma canônica
+
+```python
+from slm.inference import AddressNormalizer
+norm = AddressNormalizer.from_checkpoint("checkpoints/address/step_002000.pt", "data/tokenizer")
+norm.normalize("av paulista 1578 sp")
+```
+
+**Onde integrar DNE / tabelas de lookup**: o pré-processamento (CEP → logradouro, expansão de abreviações) e o pós-processamento (validação de UF/CEP) entram em `AddressNormalizer.normalize` — assim API, Spark e CLI herdam o mesmo fluxo automaticamente.
+
+---
+
 ## Tokenizador BPE (`slm/tokenizer.py`)
 
 Implementação do zero, sem dependências externas além de `regex`.
@@ -236,6 +254,7 @@ Com dados sintéticos (`5k` exemplos), a `val/loss` começa a subir por volta do
 | `slm/trainer.py` | Loop de treino, TensorBoard, W&B |
 | `slm/dataset.py` | Dataset com `np.memmap` |
 | `slm/config.py` | Dataclasses `ModelConfig` e `TrainConfig` |
+| `slm/inference.py` | Camada de inferência única (`AddressNormalizer`, `TextGenerator`) |
 | `configs/address.yaml` | Config do modelo de endereços |
 | `assets/style.css` | CSS para relatórios HTML exportados |
 | `assets/theme.py` | Tema matplotlib + helpers de plot |

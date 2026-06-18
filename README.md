@@ -104,6 +104,20 @@ normalizar = make_normalizar_udf(
 df = df.withColumn("endereco_normalizado", normalizar(col("endereco_bruto")))
 ```
 
+### Uso programático direto
+
+Todos os pontos de entrada acima usam a mesma camada de inferência:
+
+```python
+from slm.inference import AddressNormalizer
+
+norm = AddressNormalizer.from_checkpoint(
+    "checkpoints/address/step_002000.pt", "data/tokenizer"
+)
+norm.normalize("av paulista 1578 ap 42 sp")
+# → "Avenida Paulista, 1578, Apartamento 42 - São Paulo/SP"
+```
+
 ---
 
 ## Monitoramento
@@ -127,6 +141,7 @@ slm/                  núcleo do modelo
   trainer.py          loop de treino
   dataset.py          dataset com np.memmap
   config.py           ModelConfig e TrainConfig
+  inference.py        camada de inferência (AddressNormalizer, TextGenerator)
 
 scripts/              executáveis
   train.py            treino
