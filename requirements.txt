@@ -1,0 +1,5 @@
+torch>=2.3.0
+numpy>=1.26
+regex>=2024.4
+pyyaml>=6.0
+jupyter>=1.0

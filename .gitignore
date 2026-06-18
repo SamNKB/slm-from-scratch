@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# data e checkpoints são pesados, não commita
+data/processed/
+checkpoints/
+
+# jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# venv
+.venv/
+venv/
