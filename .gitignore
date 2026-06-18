@@ -14,3 +14,12 @@ checkpoints/
 # venv
 .venv/
 venv/
+
+# logs de treino (TensorBoard)
+runs/
+
+# wandb
+wandb/
+
+# onnx exportado ao lado dos checkpoints
+*.onnx
